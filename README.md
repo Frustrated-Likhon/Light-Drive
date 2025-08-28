@@ -34,7 +34,7 @@ LightDrive/
 
 1. Clone this repository:  
 ```bash
-git clone https://github.com/yourusername/LightDrive.git
+git clone https://github.com/Frustrated-Likhon/Light-Drive
 cd LightDrive
 ```
 
