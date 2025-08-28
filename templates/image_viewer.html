@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Viewer - {{ image }}</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <div class="breadcrumb">
+                <a href="/">🏠 Home</a>
+                <span>/</span>
+                <a href="/list?path={{ path }}">📂 {{ path.split('/')[-1] }}</a>
+                <span>/</span>
+                <span>🖼️ {{ image }}</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <button id="theme-toggle" class="theme-btn">
+                <i class="fas fa-moon"></i>
+            </button>
+            <a href="/logout" class="nav-btn">🚪 Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="media-container image-viewer">
+            <div class="media-header">
+                <h2>{{ image }}</h2>
+                <div class="file-meta">
+                    <span>Image {{ images.index(image) + 1 }} of {{ images|length }}</span>
+                    <span>📁 {{ path.split('/')[-1] }}</span>
+                </div>
+            </div>
+
+            {% if images %}
+            <div class="image-navigation">
+                {% set current_index = images.index(image) %}
+                
+                {% if current_index > 0 %}
+                <a href="/image-viewer?path={{ path }}&image={{ images[current_index - 1] }}" class="nav-btn">
+                    <i class="fas fa-arrow-left"></i> Previous
+                </a>
+                {% else %}
+                <span class="nav-btn" disabled>
+                    <i class="fas fa-arrow-left"></i> Previous
+                </span>
+                {% endif %}
+
+                <div class="image-container">
+                    <img src="/file/{{ path }}/{{ image }}" 
+                         class="media-image" 
+                         alt="{{ image }}"
+                         id="viewer-image"
+                         loading="lazy">
+                </div>
+
+                {% if current_index < images|length - 1 %}
+                <a href="/image-viewer?path={{ path }}&image={{ images[current_index + 1] }}" class="nav-btn">
+                    Next <i class="fas fa-arrow-right"></i>
+                </a>
+                {% else %}
+                <span class="nav-btn" disabled>
+                    Next <i class="fas fa-arrow-right"></i>
+                </span>
+                {% endif %}
+            </div>
+
+            <div class="image-controls">
+                <div class="zoom-controls">
+                    <button onclick="zoomImage(0.1)" class="nav-btn">
+                        <i class="fas fa-search-plus"></i> Zoom In
+                    </button>
+                    <button onclick="zoomImage(-0.1)" class="nav-btn">
+                        <i class="fas fa-search-minus"></i> Zoom Out
+                    </button>
+                    <button onclick="resetZoom()" class="nav-btn">
+                        <i class="fas fa-sync-alt"></i> Reset
+                    </button>
+                </div>
+                
+                <div class="image-actions">
+                    <a href="/file/{{ path }}/{{ image }}" class="nav-btn" download>
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                    <a href="/list?path={{ path }}" class="nav-btn">
+                        <i class="fas fa-folder"></i> View Folder
+                    </a>
+                </div>
+            </div>
+
+            <div class="image-thumbnails">
+                <h4>All Images in Folder ({{ images|length }})</h4>
+                <div class="thumbnails-grid">
+                    {% for img in images %}
+                    <a href="/image-viewer?path={{ path }}&image={{ img }}" 
+                       class="thumbnail {% if img == image %}active{% endif %}">
+                        <img src="/file/{{ path }}/{{ img }}" alt="{{ img }}" loading="lazy">
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% else %}
+            <div class="no-images">
+                <i class="fas fa-image" style="font-size: 4rem; color: #ccc;"></i>
+                <h3>No images found in this folder</h3>
+                <p>This folder doesn't contain any supported image files (JPG, JPEG, PNG, GIF, BMP, WEBP).</p>
+                <a href="/list?path={{ path }}" class="nav-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Folder
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const isDarkMode = localStorage.getItem('darkMode') === 'true';
+        
+        if (isDarkMode) {
+            document.body.classList.add('dark-mode');
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isNowDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isNowDark);
+            themeToggle.innerHTML = isNowDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        });
+
+        // Image zoom functionality
+        let currentScale = 1;
+        const imageElement = document.getElementById('viewer-image');
+
+        function zoomImage(factor) {
+            if (imageElement) {
+                currentScale += factor;
+                currentScale = Math.max(0.1, Math.min(5, currentScale)); // Limit zoom between 10% and 500%
+                imageElement.style.transform = `scale(${currentScale})`;
+            }
+        }
+
+        function resetZoom() {
+            if (imageElement) {
+                currentScale = 1;
+                imageElement.style.transform = 'scale(1)';
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            {% if images %}
+            const currentIndex = {{ images.index(image) }};
+            {% endif %}
+
+            if (e.key === 'ArrowLeft' && currentIndex > 0) {
+                window.location.href = `/image-viewer?path={{ path }}&image={{ images[images.index(image) - 1] }}`;
+            } else if (e.key === 'ArrowRight' && currentIndex < {{ images|length - 1 }}) {
+                window.location.href = `/image-viewer?path={{ path }}&image={{ images[images.index(image) + 1] }}`;
+            } else if (e.key === 'Escape') {
+                window.location.href = `/list?path={{ path }}`;
+            }
+        });
+
+        // Touch gestures for mobile
+        let touchStartX = 0;
+        imageElement.addEventListener('touchstart', e => {
+            touchStartX = e.touches[0].clientX;
+        });
+
+        imageElement.addEventListener('touchend', e => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const diffX = touchEndX - touchStartX;
+
+            if (Math.abs(diffX) > 50) { // Minimum swipe distance
+                {% if images %}
+                const currentIndex = {{ images.index(image) }};
+                {% endif %}
+
+                if (diffX > 0 && currentIndex > 0) {
+                    // Swipe right - previous image
+                    window.location.href = `/image-viewer?path={{ path }}&image={{ images[images.index(image) - 1] }}`;
+                } else if (diffX < 0 && currentIndex < {{ images|length - 1 }}) {
+                    // Swipe left - next image
+                    window.location.href = `/image-viewer?path={{ path }}&image={{ images[images.index(image) + 1] }}`;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

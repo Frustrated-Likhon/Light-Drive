@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Player - {{ file.split('/')[-1] }}</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <div class="breadcrumb">
+                <a href="/">🏠 Home</a>
+                <span>/</span>
+                <a href="javascript:history.back()">↩ Back</a>
+                <span>/</span>
+                <span>🎬 {{ file.split('/')[-1] }}</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <button id="theme-toggle" class="theme-btn">
+                <i class="fas fa-moon"></i>
+            </button>
+            <a href="/logout" class="nav-btn">🚪 Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="media-container">
+            <div class="media-header">
+                <h2>{{ file.split('/')[-1] }}</h2>
+                <div class="file-meta">
+                    {% if file.endswith('.mp4') or file.endswith('.mkv') or file.endswith('.avi') %}
+                    <span>🎥 Video File</span>
+                    {% elif file.endswith('.mp3') or file.endswith('.m4a') or file.endswith('.wav') %}
+                    <span>🎵 Audio File</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="text-center">
+                {% if file.endswith('.mp4') or file.endswith('.mkv') or file.endswith('.avi') %}
+                <video controls class="media-player" controlsList="nodownload">
+                    <source src="/file/{{ file }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                {% elif file.endswith('.mp3') or file.endswith('.m4a') or file.endswith('.wav') %}
+                <div class="audio-container">
+                    <audio controls class="media-player" controlsList="nodownload">
+                        <source src="/file/{{ file }}" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+                {% elif file.endswith('.jpg') or file.endswith('.jpeg') or file.endswith('.png') %}
+                <img src="/file/{{ file }}" class="media-image" alt="{{ file.split('/')[-1] }}">
+                {% else %}
+                <div class="unsupported-file">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--error-color);"></i>
+                    <h3>Unsupported File Format</h3>
+                    <p>This file type cannot be previewed in the browser.</p>
+                    <a href="/file/{{ file }}" class="nav-btn" download>
+                        <i class="fas fa-download"></i> Download File
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="media-actions">
+                <a href="/file/{{ file }}" class="nav-btn" download>
+                    <i class="fas fa-download"></i> Download
+                </a>
+                <a href="javascript:history.back()" class="nav-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Files
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const isDarkMode = localStorage.getItem('darkMode') === 'true';
+        
+        if (isDarkMode) {
+            document.body.classList.add('dark-mode');
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isNowDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isNowDark);
+            themeToggle.innerHTML = isNowDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        });
+
+        // Auto-play for audio/video (optional)
+        document.addEventListener('DOMContentLoaded', function() {
+            const media = document.querySelector('video, audio');
+            if (media) {
+                media.play().catch(e => {
+                    console.log('Auto-play prevented:', e);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Manager - {{ path }}</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <div class="breadcrumb">
+                <a href="/">🏠 Home</a>
+                {% if parent_dir %}
+                <span>/</span>
+                <a href="/list?path={{ parent_dir }}">↩ Up</a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="header-right">
+            <button id="theme-toggle" class="theme-btn">
+                <i class="fas fa-moon"></i>
+            </button>
+            <a href="/logout" class="nav-btn">🚪 Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="media-header">
+            <h3>📂 {{ path.split('/')[-1] if path != '/' else 'Root' }}</h3>
+            <div class="file-meta">
+                {{ files|length }} items
+            </div>
+        </div>
+
+        <div class="file-grid">
+            {% for file in files %}
+            <a href="{% if file.type == 'folder' %}/list?path={{ file.path }}{% elif file.type in ['video', 'audio'] %}/view?path={{ file.path }}{% elif file.type == 'image' %}/image-viewer?path={{ path }}&image={{ file.name }}{% else %}/file/{{ file.path }}{% endif %}" 
+               class="file-card">
+                <div class="file-icon">{{ file.icon }}</div>
+                <div class="file-info">
+                    <div class="file-name">{{ file.name }}</div>
+                    <div class="file-meta">
+                        {% if file.type != 'folder' %}
+                        <span>{{ (file.size / 1024 / 1024)|round(2) }} MB</span>
+                        {% endif %}
+                        <span>{{ file.type|title }}</span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const isDarkMode = localStorage.getItem('darkMode') === 'true';
+        
+        if (isDarkMode) {
+            document.body.classList.add('dark-mode');
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isNowDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isNowDark);
+            themeToggle.innerHTML = isNowDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+</body>
+</html>
