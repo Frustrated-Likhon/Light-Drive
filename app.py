@@ -5,7 +5,7 @@ from functools import wraps
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'  
 
-# Configuration
+
 BASE_DIRS = {
     "C": "C:/",
     "D": "D:/", 
@@ -184,3 +184,4 @@ def view_image():
 if __name__ == '__main__':
 
     app.run(host='0.0.0.0', port=80, debug=True)
+
