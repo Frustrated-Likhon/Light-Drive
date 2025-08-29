@@ -3,7 +3,7 @@ import os
 from functools import wraps
 
 app = Flask(__name__)
-app.secret_key = 'your-secret-key-here'  # Change this in production!
+app.secret_key = 'your-secret-key-here'  
 
 # Configuration
 BASE_DIRS = {
@@ -12,7 +12,7 @@ BASE_DIRS = {
     "E": "E:/"
 }
 
-# Simple user database (replace with proper database in production)
+
 USERS = {
     "admin": "password123",  # username: password
     "user": "user123"
@@ -33,14 +33,14 @@ def get_files(path):
         for item in os.listdir(path):
             full_path = os.path.join(path, item)
 
-            # Hide system and hidden files
+           
             if (item.startswith(".") or item.startswith("$") or 
                 "desktop.ini" in item.lower() or 
                 "System Volume Information" in item or
                 item.startswith("~")):
                 continue
 
-            # Get file size and modified time
+            
             try:
                 size = os.path.getsize(full_path) if os.path.isfile(full_path) else 0
                 modified = os.path.getmtime(full_path)
@@ -48,7 +48,7 @@ def get_files(path):
                 size = 0
                 modified = 0
 
-            # Detect file type
+            
             if os.path.isdir(full_path):
                 file_type = "folder"
                 icon = "📁"
@@ -82,7 +82,7 @@ def get_files(path):
                 "path": full_path
             })
         
-        # Sort: folders first, then files alphabetically
+        
         items.sort(key=lambda x: (not os.path.isdir(x['path']), x['name'].lower()))
         
     except PermissionError:
@@ -182,4 +182,5 @@ def view_image():
     return send_from_directory(directory, file_name)
 
 if __name__ == '__main__':
+
     app.run(host='0.0.0.0', port=80, debug=True)
